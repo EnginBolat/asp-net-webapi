@@ -1,5 +1,11 @@
 ## Dosya Yonetim Portalı Web API
 
+Projenin Amacı
+
+```bash
+  ⛔ Organizasyonlar içerisinde veya forum sitelerinde dosya paylaşımı yapılıp bunların loglamasını tutacak bir sistem.
+```
+
 ### Veri Tabanı Şeması
 
 ![Screenshot 2023-05-08 083854](https://user-images.githubusercontent.com/59659276/236742691-5716a37a-61ee-4ea4-a214-09a17ef0c436.png)
@@ -13,5 +19,5 @@
 Yapılacaklar
 
 ```bash
-  ⛔ Dosya Yükleme Sistemi Asenkron Hale Getirilecek
+  ⛔ Dosya Yükleme Sistemi Asenkron Hale Getirilecek.
 ```
