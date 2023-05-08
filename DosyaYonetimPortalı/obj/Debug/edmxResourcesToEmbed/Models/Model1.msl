@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+  <EntityContainerMapping StorageEntityContainer="DosyaYonetimPortaliModelStoreContainer" CdmEntityContainer="DosyaYonetimPortaliEntities">
+    <EntitySetMapping Name="TBLAUTHORITies">
+      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.TBLAUTHORITY">
+        <MappingFragment StoreEntitySet="TBLAUTHORITY">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="TBLFILEs">
+      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.TBLFILE">
+        <MappingFragment StoreEntitySet="TBLFILE">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="typeId" ColumnName="typeId" />
+          <ScalarProperty Name="uploadedId" ColumnName="uploadedId" />
+          <ScalarProperty Name="groupId" ColumnName="groupId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="TBLFILETYPEs">
+      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.TBLFILETYPE">
+        <MappingFragment StoreEntitySet="TBLFILETYPE">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="TBLGROUPs">
+      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.TBLGROUP">
+        <MappingFragment StoreEntitySet="TBLGROUP">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="TBLUSERs">
+      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.TBLUSER">
+        <MappingFragment StoreEntitySet="TBLUSER">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="surname" ColumnName="surname" />
+          <ScalarProperty Name="email" ColumnName="email" />
+          <ScalarProperty Name="password" ColumnName="password" />
+          <ScalarProperty Name="authorityId" ColumnName="authorityId" />
+          <ScalarProperty Name="groupId" ColumnName="groupId" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+  </EntityContainerMapping>
+</Mapping>
