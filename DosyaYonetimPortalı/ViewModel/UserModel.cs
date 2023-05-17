@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace DosyaYonetimPortalı.ViewModel
+namespace DosyaYonetimPortalı.Models
 {
     public class UserModel
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public string surname { get; set; }
-        public string email { get; set; }
-        public string pass { get; set; }
-        public int authId { get; set; }
-        public int groupId { get; set; }
+        public int Id { get; set; }
+        public string userNameSurname { get; set; }
+        public string userEmail { get; set; }
+        public string userPassword { get; set; }
+        public int userAuthorityId { get; set; }
+        public int userGroupId { get; set; }
+
     }
 }

@@ -1,51 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-  <EntityContainerMapping StorageEntityContainer="DosyaYonetimPortaliModelStoreContainer" CdmEntityContainer="DosyaYonetimPortaliEntities1">
-    <EntitySetMapping Name="authorities">
-      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.authority">
-        <MappingFragment StoreEntitySet="authority">
+  <EntityContainerMapping StorageEntityContainer="Db01ModelStoreContainer" CdmEntityContainer="Db01Entities1">
+    <EntitySetMapping Name="Authorities">
+      <EntityTypeMapping TypeName="Db01Model.Authority">
+        <MappingFragment StoreEntitySet="Authority">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="authorityName" ColumnName="authorityName" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="files">
-      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.file">
-        <MappingFragment StoreEntitySet="file">
+    <EntitySetMapping Name="Files">
+      <EntityTypeMapping TypeName="Db01Model.File">
+        <MappingFragment StoreEntitySet="File">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="typeId" ColumnName="typeId" />
-          <ScalarProperty Name="uploadedId" ColumnName="uploadedId" />
-          <ScalarProperty Name="groupId" ColumnName="groupId" />
+          <ScalarProperty Name="fileName" ColumnName="fileName" />
+          <ScalarProperty Name="fileTypeId" ColumnName="fileTypeId" />
+          <ScalarProperty Name="fileGroupId" ColumnName="fileGroupId" />
+          <ScalarProperty Name="fileUploaderId" ColumnName="fileUploaderId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="filetypes">
-      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.filetype">
-        <MappingFragment StoreEntitySet="filetype">
+    <EntitySetMapping Name="FileTypes">
+      <EntityTypeMapping TypeName="Db01Model.FileType">
+        <MappingFragment StoreEntitySet="FileType">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="typeName" ColumnName="typeName" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="groups">
-      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.group">
-        <MappingFragment StoreEntitySet="group">
+    <EntitySetMapping Name="Groups">
+      <EntityTypeMapping TypeName="Db01Model.Group">
+        <MappingFragment StoreEntitySet="Group">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
+          <ScalarProperty Name="groupName" ColumnName="groupName" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="users">
-      <EntityTypeMapping TypeName="DosyaYonetimPortaliModel.user">
-        <MappingFragment StoreEntitySet="users">
+    <EntitySetMapping Name="Users">
+      <EntityTypeMapping TypeName="Db01Model.User">
+        <MappingFragment StoreEntitySet="Users">
           <ScalarProperty Name="Id" ColumnName="Id" />
-          <ScalarProperty Name="name" ColumnName="name" />
-          <ScalarProperty Name="surname" ColumnName="surname" />
-          <ScalarProperty Name="email" ColumnName="email" />
-          <ScalarProperty Name="password" ColumnName="password" />
-          <ScalarProperty Name="authorityId" ColumnName="authorityId" />
-          <ScalarProperty Name="groupId" ColumnName="groupId" />
+          <ScalarProperty Name="userNameSurname" ColumnName="userNameSurname" />
+          <ScalarProperty Name="userEmail" ColumnName="userEmail" />
+          <ScalarProperty Name="userPassword" ColumnName="userPassword" />
+          <ScalarProperty Name="userAuthorityId" ColumnName="userAuthorityId" />
+          <ScalarProperty Name="userGroupId" ColumnName="userGroupId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

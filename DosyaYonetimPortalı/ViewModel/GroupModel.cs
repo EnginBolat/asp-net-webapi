@@ -7,7 +7,7 @@ namespace DosyaYonetimPortalı.ViewModel
 {
     public class GroupModel
     {
-        public int id { get; set; }
-        public string name { get; set; }
+        public int Id { get; set; }
+        public string groupName { get; set; }
     }
 }

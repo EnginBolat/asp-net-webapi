@@ -12,9 +12,21 @@ namespace DosyaYonetimPortalı.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class group
+    public partial class Group
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public Group()
+        {
+            this.Files = new HashSet<File>();
+            this.Users = new HashSet<User>();
+        }
+    
         public int Id { get; set; }
-        public string name { get; set; }
+        public string groupName { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<File> Files { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<User> Users { get; set; }
     }
 }

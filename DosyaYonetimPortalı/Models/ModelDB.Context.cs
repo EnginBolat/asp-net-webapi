@@ -13,10 +13,10 @@ namespace DosyaYonetimPortalı.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class DosyaYonetimPortaliEntities1 : DbContext
+    public partial class Db01Entities1 : DbContext
     {
-        public DosyaYonetimPortaliEntities1()
-            : base("name=DosyaYonetimPortaliEntities1")
+        public Db01Entities1()
+            : base("name=Db01Entities1")
         {
         }
     
@@ -25,10 +25,10 @@ namespace DosyaYonetimPortalı.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<authority> authorities { get; set; }
-        public virtual DbSet<file> files { get; set; }
-        public virtual DbSet<filetype> filetypes { get; set; }
-        public virtual DbSet<group> groups { get; set; }
-        public virtual DbSet<user> users { get; set; }
+        public virtual DbSet<Authority> Authorities { get; set; }
+        public virtual DbSet<File> Files { get; set; }
+        public virtual DbSet<FileType> FileTypes { get; set; }
+        public virtual DbSet<Group> Groups { get; set; }
+        public virtual DbSet<User> Users { get; set; }
     }
 }

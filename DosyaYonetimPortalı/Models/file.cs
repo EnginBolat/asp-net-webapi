@@ -12,12 +12,16 @@ namespace DosyaYonetimPortalı.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class file
+    public partial class File
     {
         public int Id { get; set; }
-        public string name { get; set; }
-        public Nullable<int> typeId { get; set; }
-        public Nullable<int> uploadedId { get; set; }
-        public Nullable<int> groupId { get; set; }
+        public string fileName { get; set; }
+        public int fileTypeId { get; set; }
+        public int fileGroupId { get; set; }
+        public int fileUploaderId { get; set; }
+    
+        public virtual FileType FileType { get; set; }
+        public virtual Group Group { get; set; }
+        public virtual User User { get; set; }
     }
 }

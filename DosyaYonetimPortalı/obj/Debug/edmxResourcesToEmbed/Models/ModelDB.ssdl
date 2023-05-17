@@ -1,53 +1,132 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Schema Namespace="DosyaYonetimPortaliModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-  <EntityType Name="authority">
+<Schema Namespace="Db01Model.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityType Name="Authority">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+    <Property Name="authorityName" Type="nvarchar" MaxLength="50" Nullable="false" />
   </EntityType>
-  <EntityType Name="file">
+  <EntityType Name="File">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar" MaxLength="50" />
-    <Property Name="typeId" Type="int" />
-    <Property Name="uploadedId" Type="int" />
-    <Property Name="groupId" Type="int" />
+    <Property Name="fileName" Type="nvarchar" MaxLength="50" Nullable="false" />
+    <Property Name="fileTypeId" Type="int" Nullable="false" />
+    <Property Name="fileGroupId" Type="int" Nullable="false" />
+    <Property Name="fileUploaderId" Type="int" Nullable="false" />
   </EntityType>
-  <EntityType Name="filetype">
+  <EntityType Name="FileType">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
+    <Property Name="typeName" Type="nchar" MaxLength="10" Nullable="false" />
   </EntityType>
-  <EntityType Name="group">
+  <EntityType Name="Group">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar" MaxLength="50" />
+    <Property Name="groupName" Type="nvarchar" MaxLength="50" Nullable="false" />
   </EntityType>
-  <EntityType Name="users">
+  <EntityType Name="Users">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-    <Property Name="name" Type="nvarchar" MaxLength="50" Nullable="false" />
-    <Property Name="surname" Type="nvarchar" MaxLength="50" Nullable="false" />
-    <Property Name="email" Type="nvarchar" MaxLength="50" Nullable="false" />
-    <Property Name="password" Type="nvarchar" MaxLength="50" Nullable="false" />
-    <Property Name="authorityId" Type="int" Nullable="false" />
-    <Property Name="groupId" Type="int" Nullable="false" />
+    <Property Name="userNameSurname" Type="nvarchar" MaxLength="100" Nullable="false" />
+    <Property Name="userEmail" Type="nvarchar" MaxLength="100" Nullable="false" />
+    <Property Name="userPassword" Type="nvarchar" MaxLength="100" Nullable="false" />
+    <Property Name="userAuthorityId" Type="int" Nullable="false" />
+    <Property Name="userGroupId" Type="int" />
   </EntityType>
-  <EntityContainer Name="DosyaYonetimPortaliModelStoreContainer">
-    <EntitySet Name="authority" EntityType="Self.authority" Schema="dbo" store:Type="Tables" />
-    <EntitySet Name="file" EntityType="Self.file" Schema="dbo" store:Type="Tables" />
-    <EntitySet Name="filetype" EntityType="Self.filetype" Schema="dbo" store:Type="Tables" />
-    <EntitySet Name="group" EntityType="Self.group" Schema="dbo" store:Type="Tables" />
-    <EntitySet Name="users" EntityType="Self.users" Schema="dbo" store:Type="Tables" />
+  <Association Name="FK_File_ToFileType">
+    <End Role="FileType" Type="Self.FileType" Multiplicity="1" />
+    <End Role="File" Type="Self.File" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="FileType">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="File">
+        <PropertyRef Name="fileTypeId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_File_ToGroup">
+    <End Role="Group" Type="Self.Group" Multiplicity="1" />
+    <End Role="File" Type="Self.File" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Group">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="File">
+        <PropertyRef Name="fileGroupId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_File_ToUsers">
+    <End Role="Users" Type="Self.Users" Multiplicity="1" />
+    <End Role="File" Type="Self.File" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="File">
+        <PropertyRef Name="fileUploaderId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Users_ToAuthority">
+    <End Role="Authority" Type="Self.Authority" Multiplicity="1" />
+    <End Role="Users" Type="Self.Users" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Authority">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Users">
+        <PropertyRef Name="userAuthorityId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Users_ToGroup">
+    <End Role="Group" Type="Self.Group" Multiplicity="0..1" />
+    <End Role="Users" Type="Self.Users" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Group">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Users">
+        <PropertyRef Name="userGroupId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="Db01ModelStoreContainer">
+    <EntitySet Name="Authority" EntityType="Self.Authority" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="File" EntityType="Self.File" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="FileType" EntityType="Self.FileType" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="Group" EntityType="Self.Group" Schema="dbo" store:Type="Tables" />
+    <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
+    <AssociationSet Name="FK_File_ToFileType" Association="Self.FK_File_ToFileType">
+      <End Role="FileType" EntitySet="FileType" />
+      <End Role="File" EntitySet="File" />
+    </AssociationSet>
+    <AssociationSet Name="FK_File_ToGroup" Association="Self.FK_File_ToGroup">
+      <End Role="Group" EntitySet="Group" />
+      <End Role="File" EntitySet="File" />
+    </AssociationSet>
+    <AssociationSet Name="FK_File_ToUsers" Association="Self.FK_File_ToUsers">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="File" EntitySet="File" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Users_ToAuthority" Association="Self.FK_Users_ToAuthority">
+      <End Role="Authority" EntitySet="Authority" />
+      <End Role="Users" EntitySet="Users" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Users_ToGroup" Association="Self.FK_Users_ToGroup">
+      <End Role="Group" EntitySet="Group" />
+      <End Role="Users" EntitySet="Users" />
+    </AssociationSet>
   </EntityContainer>
 </Schema>

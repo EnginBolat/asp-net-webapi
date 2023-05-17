@@ -2,563 +2,425 @@
 using DosyaYonetimPortalı.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 namespace DosyaYonetimPortalı.App_Start
 {
     public class ServisController : ApiController
     {
-        DosyaYonetimPortaliEntities1 db = new DosyaYonetimPortaliEntities1();
-        SonucModel sonuc = new SonucModel();
+        Db01Entities1 db = new Db01Entities1();
+        ResponseModel response = new ResponseModel();
 
+
+        //Kullanıcı İşlemleri
         #region User
 
         [HttpGet]
-        [Route("api/allUsers")]
-        public List<UserModel> allUsers()
+        [Route("api/user/list")]
+        public List<UserModel> userList()
         {
-            List<UserModel> userList = db.users.Select(x => new UserModel()
+            List<UserModel> userList = db.Users.Select(x => new UserModel()
             {
-                id = x.Id,
-                name = x.name,
-                surname = x.surname,
-                email = x.email,
-                pass = x.password,
-                authId = x.authorityId,
-                groupId = x.groupId,
-
+                Id = x.Id,
+                userNameSurname = x.userNameSurname,
+                userEmail = x.userEmail,
+                userPassword = x.userPassword,
+                userAuthorityId = x.userAuthorityId,
+                userGroupId = x.userGroupId,
             }).ToList();
 
             return userList;
         }
 
         [HttpGet]
-        [Route("api/userById/{id}")]
-        public UserModel userById(int id)
+        [Route("api/user/userById/{userId}")]
+        public UserModel userById(int userId)
         {
-            UserModel user = db.users.Where(x => x.Id == id).Select(y => new UserModel()
+            UserModel record = db.Users.Where(x => x.Id == userId).Select(y => new UserModel()
             {
+                Id = y.Id,
+                userNameSurname = y.userNameSurname,
+                userEmail = y.userEmail,
+                userPassword = y.userPassword,
+                userAuthorityId = y.userAuthorityId,
+                userGroupId = y.userGroupId,
+            }).FirstOrDefault();
 
-                id = y.Id,
-                name = y.name,
-                surname = y.surname,
-                email = y.email,
-                pass = y.password,
-                authId = y.authorityId,
-                groupId = y.groupId,
-
-            }).SingleOrDefault();
-
-            return user;
-        }
-
-        [HttpPost]
-        [Route("api/addUser")]
-        public SonucModel addUser(UserModel user)
-        {
-            if (db.users.Count(c => c.name == user.name) > 0)
-            {
-                sonuc.islem = false;
-                sonuc.mesaj = "Girilen İsim Kayıtlıdır!";
-                return sonuc;
-            }
-
-            user record = new user();
-            record.Id = user.id;
-            record.name = user.name;
-            record.surname = user.surname;
-            record.email = user.email;
-            record.password = user.pass;
-            record.authorityId = user.authId;
-            record.groupId = user.groupId;
-
-            db.users.Add(record);
-            db.SaveChanges();
-
-
-
-            sonuc.islem = true;
-            sonuc.mesaj = "Kullanıcı Eklendi";
-            return sonuc;
-        }
-
-        [HttpPost]
-        [Route("api/updateUser")]
-        public SonucModel updateUser(UserModel user)
-        {
-            user userObject = db.users.Where(x => x.Id == user.id).SingleOrDefault();
-
-            if (userObject != null)
-            {
-                userObject.Id = user.id;
-                userObject.name = user.name;
-                userObject.surname = user.surname;
-                userObject.email = user.email;
-                userObject.password = user.pass;
-                userObject.groupId = user.groupId;
-                userObject.authorityId = user.authId;
-
-                db.SaveChangesAsync();
-
-                sonuc.islem = true;
-                sonuc.mesaj = "Kullanıcı Güncellendi";
-
-                return sonuc;
-            }
-
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Kullanıcı Bulunamadı!";
-            return sonuc;
+            return record;
         }
 
         [HttpDelete]
-        [Route("api/deleteUser/{id}")]
-        public SonucModel deleteUser(int id)
+        [Route("api/user/deleteUser/{userId}")]
+        public ResponseModel deleteUser(int userId)
         {
-            user record = db.users.Where(x => x.Id == id).SingleOrDefault();
-
-            if (record == null)
+            User record = db.Users.Where(x => x.Id == userId).SingleOrDefault();
+            if (record != null)
             {
-                sonuc.islem = false;
-                sonuc.mesaj = "Kayıt Bulunamadı";
-                return sonuc;
+                db.Users.Remove(record);
+                db.SaveChangesAsync();
+                response.process = true;
+                response.message = "Kullanıcı Silindi";
+                return response;
             }
-            if (db.files.Count(c => c.uploadedId == id) > 0)
-            {
-                sonuc.islem = false;
-                sonuc.mesaj = "Girilen Kullanıcı Daha Önceden Dosya Yüklediği İçin Silinemez";
-                return sonuc;
-            }
-
-            db.users.Remove(record);
-            db.SaveChangesAsync();
-
-            sonuc.islem = true;
-            sonuc.mesaj = "Kayıt Silindi";
-            return sonuc;
+            response.process = false;
+            response.message = "Kullanıcı Bulunamadı";
+            return response;
         }
 
         [HttpPost]
-        [Route("api/changeUserAuth")]
-        public SonucModel changeUserAuth(int userId, int authId)
+        [Route("api/user/addUser")]
+        public ResponseModel addUser(UserModel user)
         {
-            user userObject = db.users.Where(x => x.Id == userId).SingleOrDefault();
-            authority authObject = db.authorities.Where(x => x.Id == authId).SingleOrDefault();
-
-            if (userObject != null)
+            if (db.Users.Count(c => c.userEmail == user.userEmail) > 0)
             {
-                if (authObject != null)
-                {
-                    user record = new user();
-                    record.Id = userObject.Id;
-                    record.name = userObject.name;
-                    record.surname = userObject.surname;
-                    record.email = userObject.email;
-                    record.password = userObject.password;
-                    record.authorityId = authId;
-                    record.groupId = userObject.groupId;
-
-                    db.SaveChangesAsync();
-
-                    sonuc.islem = true;
-                    sonuc.mesaj = "Kayıt Güncellendi";
-                    return sonuc;
-                }
-                else
-                {
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Böyle Bir Yetki Mevcut Değil";
-                    return sonuc;
-                }
+                response.process = true;
+                response.message = "Kullanıcı Daha Önceden Kayıtlıdır";
+                return response;
             }
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Kullanıcı Mevcut Değil";
-            return sonuc;
+            User record = new User();
+
+            record.userNameSurname = user.userNameSurname;
+            record.userEmail = user.userEmail;
+            record.userPassword = user.userPassword;
+            record.userAuthorityId = user.userAuthorityId;
+            record.userGroupId = user.userGroupId;
+            db.Users.Add(record);
+            db.SaveChanges();
+            response.process = true;
+            response.message = "Kullanıcı Eklendi";
+            return response;
         }
 
-        [HttpPost]
-        [Route("api/changeUserGroup")]
-        public SonucModel changeUserGroup(int userId, int groupId)
+        [HttpPut]
+        [Route("api/user/updateUser")]
+        public ResponseModel updateUser(UserModel user)
         {
-            user userObject = db.users.Where(x => x.Id == userId).SingleOrDefault();
-            group groupObject = db.groups.Where(x => x.Id == groupId).SingleOrDefault();
+            User record = db.Users.Where(x => x.Id == user.Id).SingleOrDefault();
 
-            if (userObject != null)
+            if (record != null)
             {
-                if (groupObject != null)
-                {
-                    user record = new user();
-                    record.Id = userObject.Id;
-                    record.name = userObject.name;
-                    record.surname = userObject.surname;
-                    record.email = userObject.email;
-                    record.password = userObject.password;
-                    record.authorityId = userObject.authorityId;
-                    record.groupId = groupId;
+                record.userNameSurname = user.userNameSurname;
+                record.userEmail = user.userEmail;
+                record.userPassword = user.userPassword;
+                record.userAuthorityId = user.userAuthorityId;
+                record.userGroupId = user.userGroupId;
 
-                    db.SaveChangesAsync();
+                db.SaveChangesAsync();
 
-
-                    sonuc.islem = true;
-                    sonuc.mesaj = "Kayıt Güncellendi";
-                    return sonuc;
-                }
-                else
-                {
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Böyle Bir Grup Mevcut Değil";
-                    return sonuc;
-                }
+                response.process = true;
+                response.message = "Kullanıcı GÜncellendi";
+                return response;
             }
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Kullanıcı Mevcut Değil";
-            return sonuc;
+            response.process = false;
+            response.message = "Kullanıcı Bulunamadı";
+            return response;
         }
 
-        #endregion
+        #endregion // Kullanıcı İşlemleri
 
-        #region Group
+        //Grup İşlemleri
+        #region Group 
 
         [HttpGet]
-        [Route("api/groupList")]
+        [Route("api/group/list")]
         public List<GroupModel> groupList()
         {
-            List<GroupModel> groupList = db.groups.Select(x => new GroupModel()
+            List<GroupModel> groupList = db.Groups.Select(x => new GroupModel()
             {
-                id = x.Id,
-                name = x.name,
+                Id = x.Id,
+                groupName = x.groupName,
             }).ToList();
 
             return groupList;
         }
 
         [HttpGet]
-        [Route("api/groupById/{id}")]
-        public GroupModel groupbyId(int id)
+        [Route("api/group/groupById/{groupId}")]
+        public GroupModel groupById(int groupId)
         {
-            GroupModel group = db.groups.Where(x => x.Id == id).Select(n => new GroupModel()
+            GroupModel record = db.Groups.Where(x => x.Id == groupId).Select(y => new GroupModel()
             {
-                id = n.Id,
-                name = n.name,
-            }).SingleOrDefault();
-            return group;
-        }
+                Id = y.Id,
+                groupName = y.groupName,
+            }).FirstOrDefault();
 
-        [HttpPost]
-        [Route("api/addGroup")]
-        public SonucModel addGroup(String name)
-        {
-            group groupObject = db.groups.Where(x => x.name == name).SingleOrDefault();
-
-            if (groupObject != null)
-            {
-                sonuc.islem = false;
-                sonuc.mesaj = "Bu Grup Daha Önceden Sisteme Eklenmiş!";
-
-                return sonuc;
-            }
-
-
-            group record = new group();
-            record.name = name;
-
-            db.groups.Add(record);
-            db.SaveChangesAsync();
-
-            sonuc.islem = true;
-            sonuc.mesaj = "Grup Başarıyla Eklendi";
-
-            return sonuc;
-        }
-
-        [HttpPost]
-        [Route("api/updateGroup")]
-        public SonucModel updateGroup(GroupModel group)
-        {
-            group groupObject = db.groups.Where(x => x.Id == group.id).SingleOrDefault();
-            if (groupObject != null)
-            {
-                groupObject.Id = group.id;
-                groupObject.name = group.name;
-
-                db.SaveChangesAsync();
-
-                sonuc.islem = true;
-                sonuc.mesaj = "Grup İsmi Güncellendi";
-                return sonuc;
-
-            }
-
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Grup Bulunamadı!";
-            return sonuc;
+            return record;
         }
 
         [HttpDelete]
-        [Route("api/deleteGroup/{groupId}")]
-        public SonucModel deleteGroup(int groupId)
+        [Route("api/group/deleteGroup/{groupId}")]
+        public ResponseModel deleteGroup(int groupId)
         {
-            group groupObject = db.groups.Where(x => x.Id == groupId).SingleOrDefault();
-            file fileObject = db.files.Where(x => x.groupId == groupId).SingleOrDefault();
-            user userObject = db.users.Where(x => x.groupId == groupId).SingleOrDefault();
-
-            if (groupObject != null)
+            Group record = db.Groups.Where(x => x.Id == groupId).SingleOrDefault();
+            if (record != null)
             {
-
-                if (fileObject != null || userObject != null)
-                {
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Grup Bir Dosya veya Kullanıcıya Bağlı Olduğu İçin Silinemez!";
-                    return sonuc;
-                }
-                else
-                {
-                    db.groups.Remove(groupObject);
-                    db.SaveChangesAsync();
-
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Grup Başarılı Bir Şekilde Silindi!";
-                    return sonuc;
-                }
-
+                db.Groups.Remove(record);
+                db.SaveChangesAsync();
+                response.process = true;
+                response.message = "Grup Silindi";
+                return response;
             }
-
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Grup Bulunamadı!";
-            return sonuc;
+            response.process = false;
+            response.message = "Grup Bulunamadı";
+            return response;
         }
 
+        [HttpPost]
+        [Route("api/user/addGroup")]
+        public ResponseModel addGroup(GroupModel group)
+        {
+            if (db.Groups.Count(c => c.groupName == group.groupName) > 0)
+            {
+                response.process = true;
+                response.message = "Grup Daha Önceden Kayıtlıdır";
+                return response;
+            }
+            Group record = new Group();
+
+            record.groupName = group.groupName;
+            db.Groups.Add(record);
+            db.SaveChanges();
+            response.process = true;
+            response.message = "Grup Eklendi";
+            return response;
+        }
+
+        [HttpPut]
+        [Route("api/group/updateGroup")]
+        public ResponseModel updateGroup(GroupModel group)
+        {
+            Group record = db.Groups.Where(x => x.Id == group.Id).SingleOrDefault();
+
+            if (record != null)
+            {
+                record.Id = group.Id;
+                record.groupName = group.groupName;
+                db.SaveChangesAsync();
+
+                response.process = true;
+                response.message = "Grup GÜncellendi";
+                return response;
+            }
+            response.process = false;
+            response.message = "Grup Bulunamadı";
+            return response;
+        }
 
         #endregion
 
+        //Yetki İşlemleri
         #region Authority
 
         [HttpGet]
-        [Route("api/authList")]
-        public List<AuthModel> authList()
+        [Route("api/authority/list")]
+        public List<AuthorityModel> authorityList()
         {
-            List<AuthModel> authList = db.authorities.Select(x => new AuthModel()
+            List<AuthorityModel> authorityList = db.Authorities.Select(x => new AuthorityModel()
             {
-                id = x.Id,
-                name = x.name,
+                Id = x.Id,
+                authorityName = x.authorityName,
             }).ToList();
 
-            return authList;
+            return authorityList;
         }
 
         [HttpGet]
-        [Route("api/authById/{id}")]
-        public AuthModel authById(int id)
+        [Route("api/authority/authorityById/{authorityId}")]
+        public AuthorityModel authorityById(int authorityId)
         {
-            AuthModel auth = db.groups.Where(x => x.Id == id).Select(n => new AuthModel()
+            AuthorityModel record = db.Authorities.Where(x => x.Id == authorityId).Select(y => new AuthorityModel()
             {
-                id = n.Id,
-                name = n.name,
-            }).SingleOrDefault();
+                Id = y.Id,
+                authorityName = y.authorityName,
+            }).FirstOrDefault();
 
-            return auth;
-        }
-
-        [HttpPost]
-        [Route("api/addAuth")]
-        public SonucModel addAuth(String name)
-        {
-            authority authObject = db.authorities.Where(x => x.name == name).SingleOrDefault();
-
-            if (authObject != null)
-            {
-                sonuc.islem = false;
-                sonuc.mesaj = "Bu Yetki Daha Önceden Sisteme Eklenmiş!";
-
-                return sonuc;
-            }
-
-
-            authority record = new authority();
-            record.name = name;
-
-            db.authorities.Add(record);
-            db.SaveChangesAsync();
-
-            sonuc.islem = true;
-            sonuc.mesaj = "Yetki Başarıyla Eklendi";
-
-            return sonuc;
-        }
-
-        [HttpPost]
-        [Route("api/updateAuth")]
-        public SonucModel updateAuth(AuthModel auth)
-        {
-            authority authObject = db.groups.Where(x => x.Id == authority.id).SingleOrDefault();
-            if (authObject != null)
-            {
-                authObject.Id = auth.id;
-                authObject.name = auth.name;
-
-                db.SaveChangesAsync();
-
-                sonuc.islem = true;
-                sonuc.mesaj = "Yetki İsmi Güncellendi";
-                return sonuc;
-
-            }
-
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Yetki Bulunamadı!";
-            return sonuc;
+            return record;
         }
 
         [HttpDelete]
-        [Route("api/deleteAuth/{authId}")]
-        public SonucModel deleteAuth(int authId)
+        [Route("api/authority/deleteAuthority/{authorityId}")]
+        public ResponseModel deleteAuthority(int authorityId)
         {
-            authority authObject = db.authorities.Where(x => x.Id == authId).SingleOrDefault();
-            user userObject = db.users.Where(x => x.authorityId == authId).SingleOrDefault();
-
-            if (authObject != null)
+            Authority record = db.Authorities.Where(x => x.Id == authorityId).SingleOrDefault();
+            if (record != null)
             {
-
-                if (userObject != null)
-                {
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Yetki Bir Kullanıcıya Bağlı Olduğu İçin Silinemez!";
-                    return sonuc;
-                }
-                else
-                {
-                    db.authorities.Remove(authObject);
-                    db.SaveChangesAsync();
-
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Yetki Başarılı Bir Şekilde Silindi!";
-                    return sonuc;
-                }
-
+                db.Authorities.Remove(record);
+                db.SaveChangesAsync();
+                response.process = true;
+                response.message = "Yetki Silindi";
+                return response;
             }
+            response.process = false;
+            response.message = "Yetki Bulunamadı";
+            return response;
+        }
 
-            sonuc.islem = false;
-            sonuc.mesaj = "Yetki Bir Grup Bulunamadı!";
-            return sonuc;
+        [HttpPost]
+        [Route("api/user/addAuth")]
+        public ResponseModel addAuth(AuthorityModel auth)
+        {
+            if (db.Authorities.Count(c => c.authorityName == auth.authorityName) > 0)
+            {
+                response.process = true;
+                response.message = "Yetki Daha Önceden Kayıtlıdır";
+                return response;
+            }
+            Authority record = new Authority();
+
+            record.authorityName = auth.authorityName;
+            db.Authorities.Add(record);
+            db.SaveChanges();
+            response.process = true;
+            response.message = "Yetki Eklendi";
+            return response;
+        }
+
+        [HttpPut]
+        [Route("api/authority/updateAuthority")]
+        public ResponseModel updateAuthority(AuthorityModel authority)
+        {
+            Authority record = db.Authorities.Where(x => x.Id == authority.Id).SingleOrDefault();
+
+            if (record != null)
+            {
+                record.Id = authority.Id;
+                record.authorityName = authority.authorityName;
+                db.SaveChangesAsync();
+
+                response.process = true;
+                response.message = "Yetki GÜncellendi";
+                return response;
+            }
+            response.process = false;
+            response.message = "Yetki Bulunamadı";
+            return response;
         }
         #endregion
 
+        //Dosya Tipi
         #region FileType
 
         [HttpGet]
-        [Route("api/fileTypeList")]
-        public List<FileType> fileTypeList()
+        [Route("api/filetype/list")]
+        public List<FileTypeModel> fileTypeList()
         {
-            List<FileType> fileTypeList = db.filetypes.Select(x => new FileType()
+            List<FileTypeModel> fileTypeList = db.FileTypes.Select(x => new FileTypeModel()
             {
-                id = x.Id,
-                name = x.name,
+                Id = x.Id,
+                typeName = x.typeName,
             }).ToList();
 
             return fileTypeList;
         }
 
         [HttpGet]
-        [Route("api/fileTypeById/{id}")]
-        public FileType fileTypeById(int id)
+        [Route("api/filetype/filetypeById/{fileTypeId}")]
+        public FileTypeModel fileTypeIdById(int fileTypeId)
         {
-            FileType fileType = db.filetypes.Where(x => x.Id == id).Select(n => new FileType()
+            FileTypeModel record = db.FileTypes.Where(x => x.Id == fileTypeId).Select(y => new FileTypeModel()
             {
-                id = n.Id,
-                name = n.name,
-            }).SingleOrDefault();
+                Id = y.Id,
+                typeName = y.typeName,
+            }).FirstOrDefault();
 
-            return fileType;
-        }
-
-        [HttpPost]
-        [Route("api/addFileType")]
-        public SonucModel addFileType(String name)
-        {
-            filetype fileTypeObject = db.filetypes.Where(x => x.name == name).SingleOrDefault();
-
-            if (fileTypeObject != null)
-            {
-                sonuc.islem = false;
-                sonuc.mesaj = "Bu Dosya Türü Daha Önceden Sisteme Eklenmiş!";
-
-                return sonuc;
-            }
-
-
-            filetype record = new filetype();
-            record.name = name;
-
-            db.filetypes.Add(record);
-            db.SaveChangesAsync();
-
-            sonuc.islem = true;
-            sonuc.mesaj = "Dosya Türü Başarıyla Eklendi";
-
-            return sonuc;
-        }
-
-        [HttpPost]
-        [Route("api/updateFileType")]
-        public SonucModel updateFileType(FileType fileType)
-        {
-            filetype fileTypeObject = db.groups.Where(x => x.Id == filetype.id).SingleOrDefault();
-            if (fileTypeObject != null)
-            {
-                fileTypeObject.Id = fileType.id;
-                fileTypeObject.name = fileType.name;
-
-                db.SaveChangesAsync();
-
-                sonuc.islem = true;
-                sonuc.mesaj = "Dosya Türü İsmi Güncellendi";
-                return sonuc;
-
-            }
-
-            sonuc.islem = false;
-            sonuc.mesaj = "Böyle Bir Dosya Türü Bulunamadı!";
-            return sonuc;
+            return record;
         }
 
         [HttpDelete]
-        [Route("api/deleteAuth/{fileTypeId}")]
-        public SonucModel deleteFileType(int fileTypeId)
+        [Route("api/fileType/deleteFileType/{fileTypeId}")]
+        public ResponseModel deleteFileType(int fileTypeId)
         {
-            filetype fileTypeObject = db.filetypes.Where(x => x.Id == fileTypeId).SingleOrDefault();
-            file fileObject = db.files.Where(x => x.typeId == fileTypeId).SingleOrDefault();
-
-            if (fileTypeObject != null)
+            FileType record = db.FileTypes.Where(x => x.Id == fileTypeId).SingleOrDefault();
+            if (record != null)
             {
-
-                if (fileObject != null)
-                {
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Dosya Türü Bir Dosyaya Bağlı Olduğu İçin Silinemez!";
-                    return sonuc;
-                }
-                else
-                {
-                    db.filetypes.Remove(fileTypeObject);
-                    db.SaveChangesAsync();
-
-                    sonuc.islem = false;
-                    sonuc.mesaj = "Dosya Türü Başarılı Bir Şekilde Silindi!";
-                    return sonuc;
-                }
-
+                db.FileTypes.Remove(record);
+                db.SaveChangesAsync();
+                response.process = true;
+                response.message = "Dosya Türü Silindi";
+                return response;
             }
+            response.process = false;
+            response.message = "Dosya Türü Bulunamadı";
+            return response;
+        }
 
-            sonuc.islem = false;
-            sonuc.mesaj = "Dosya Türü Bir Grup Bulunamadı!";
-            return sonuc;
+        [HttpPut]
+        [Route("api/filetype/updateFileType")]
+        public ResponseModel updateFileType(FileTypeModel fileType)
+        {
+            FileType record = db.FileTypes.Where(x => x.Id == fileType.Id).SingleOrDefault();
+
+            if (record != null)
+            {
+                record.Id = fileType.Id;
+                record.typeName = fileType.typeName;
+                db.SaveChangesAsync();
+
+                response.process = true;
+                response.message = "Dosya Türü GÜncellendi";
+                return response;
+            }
+            response.process = false;
+            response.message = "Dosya Türü Bulunamadı";
+            return response;
         }
         #endregion
 
-        #region File
-        #endregion
+        [HttpPost]
+        [Route("api/file/uploadFile")]
+        public ResponseModel UploadFile(UserModel user)
+        {
+            String fileName = "";
+            var ctx = HttpContext.Current;
+            var root = ctx.Server.MapPath("~/Uploads");
+            var provider =
+                new MultipartFormDataStreamProvider(root);
+
+            try
+            {
+                Request.Content
+                    .ReadAsMultipartAsync(provider);
+
+                foreach (var file in provider.FileData)
+                {
+                    var name = file.Headers
+                        .ContentDisposition
+                        .FileName;
+
+                    // remove double quotes from string.
+                    name = name.Trim('"');
+
+                    var localFileName = file.LocalFileName;
+                    var filePath = Path.Combine(root, name);
+                    fileName = localFileName;
+
+                    System.IO.File.Move(localFileName, filePath);
+                }
+            }
+            catch (Exception e)
+            {
+                response.process = false;
+                response.message = e.Message;
+                return response;
+            }
+
+            Models.File record = new Models.File();
+            record.fileUploaderId = user.Id;
+            record.fileName = fileName;
+            record.fileGroupId = user.userGroupId;
+
+
+
+            response.process = true;
+            response.message = "Dosya Eklendi";
+            return response;
+
+        }
     }
 }

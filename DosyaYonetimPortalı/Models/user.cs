@@ -12,14 +12,24 @@ namespace DosyaYonetimPortalı.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class user
+    public partial class User
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public User()
+        {
+            this.Files = new HashSet<File>();
+        }
+    
         public int Id { get; set; }
-        public string name { get; set; }
-        public string surname { get; set; }
-        public string email { get; set; }
-        public string password { get; set; }
-        public int authorityId { get; set; }
-        public int groupId { get; set; }
+        public string userNameSurname { get; set; }
+        public string userEmail { get; set; }
+        public string userPassword { get; set; }
+        public int userAuthorityId { get; set; }
+        public int userGroupId { get; set; }
+    
+        public virtual Authority Authority { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<File> Files { get; set; }
+        public virtual Group Group { get; set; }
     }
 }
