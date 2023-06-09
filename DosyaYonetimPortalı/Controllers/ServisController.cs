@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 
@@ -16,27 +14,34 @@ namespace DosyaYonetimPortalı.App_Start
     {
         Db01Entities1 db = new Db01Entities1();
         ResponseModel response = new ResponseModel();
-
-
         //Kullanıcı İşlemleri
         #region User
 
         [HttpGet]
         [Route("api/user/list")]
-        public List<UserModel> userList()
+        public List<CustomModel> userList()
         {
-            List<UserModel> userList = db.Users.Select(x => new UserModel()
+            List<CustomModel> userList = db.Users.Select(x => new CustomModel()
             {
                 Id = x.Id,
                 userNameSurname = x.userNameSurname,
                 userEmail = x.userEmail,
                 userPassword = x.userPassword,
-                userAuthorityId = x.userAuthorityId,
-                userGroupId = x.userGroupId,
+                userAuthority = db.Authorities.Where(y=> y.Id == x.userAuthorityId).Select(y => new AuthorityModel()
+                {
+                    Id = y.Id,
+                    authorityName = y.authorityName,
+                }).FirstOrDefault(),
+                userGroup = db.Groups.Where(g => g.Id == x.userGroupId).Select(g => new GroupModel()
+                {
+                    Id = g.Id,
+                    groupName = g.groupName,
+                }).FirstOrDefault(),
             }).ToList();
 
             return userList;
         }
+
 
         [HttpGet]
         [Route("api/user/userById/{userId}")]
@@ -79,7 +84,7 @@ namespace DosyaYonetimPortalı.App_Start
         {
             if (db.Users.Count(c => c.userEmail == user.userEmail) > 0)
             {
-                response.process = true;
+                response.process = false;
                 response.message = "Kullanıcı Daha Önceden Kayıtlıdır";
                 return response;
             }
@@ -114,7 +119,7 @@ namespace DosyaYonetimPortalı.App_Start
                 db.SaveChangesAsync();
 
                 response.process = true;
-                response.message = "Kullanıcı GÜncellendi";
+                response.message = "Kullanıcı Güncellendi";
                 return response;
             }
             response.process = false;
@@ -262,7 +267,7 @@ namespace DosyaYonetimPortalı.App_Start
         }
 
         [HttpPost]
-        [Route("api/user/addAuth")]
+        [Route("api/authority/addAuth")]
         public ResponseModel addAuth(AuthorityModel auth)
         {
             if (db.Authorities.Count(c => c.authorityName == auth.authorityName) > 0)

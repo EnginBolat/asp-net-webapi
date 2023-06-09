@@ -72,3 +72,6 @@ C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\obj\
 C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\obj\Debug\DosyaYonetimPortalı.csproj.CopyComplete
 C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\obj\Debug\DosyaYonetimPortalı.dll
 C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\obj\Debug\DosyaYonetimPortalı.pdb
+C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\bin\System.Web.Cors.dll
+C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\bin\System.Web.Http.Cors.dll
+C:\Users\Engin Bolat\source\repos\DosyaYonetimPortalı\DosyaYonetimPortalı\bin\System.Web.Http.Cors.xml
