@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web;
 using System.Web.Http;
 
@@ -27,7 +29,7 @@ namespace DosyaYonetimPortalı.App_Start
                 userNameSurname = x.userNameSurname,
                 userEmail = x.userEmail,
                 userPassword = x.userPassword,
-                userAuthority = db.Authorities.Where(y=> y.Id == x.userAuthorityId).Select(y => new AuthorityModel()
+                userAuthority = db.Authorities.Where(y => y.Id == x.userAuthorityId).Select(y => new AuthorityModel()
                 {
                     Id = y.Id,
                     authorityName = y.authorityName,
@@ -54,7 +56,7 @@ namespace DosyaYonetimPortalı.App_Start
                 userEmail = y.userEmail,
                 userPassword = y.userPassword,
                 userAuthorityId = y.userAuthorityId,
-                userGroupId = y.userGroupId,
+                userGroupId = y.userGroupId ?? 1,
             }).FirstOrDefault();
 
             return record;
@@ -140,6 +142,7 @@ namespace DosyaYonetimPortalı.App_Start
             {
                 Id = x.Id,
                 groupName = x.groupName,
+                totalUser = db.Users.Count(y => y.userGroupId == x.Id),
             }).ToList();
 
             return groupList;
@@ -177,7 +180,7 @@ namespace DosyaYonetimPortalı.App_Start
         }
 
         [HttpPost]
-        [Route("api/user/addGroup")]
+        [Route("api/group/addGroup")]
         public ResponseModel addGroup(GroupModel group)
         {
             if (db.Groups.Count(c => c.groupName == group.groupName) > 0)
@@ -308,124 +311,104 @@ namespace DosyaYonetimPortalı.App_Start
         }
         #endregion
 
-        //Dosya Tipi
-        #region FileType
+        #region File
 
         [HttpGet]
-        [Route("api/filetype/list")]
-        public List<FileTypeModel> fileTypeList()
+        [Route("api/file/allFiles")]
+        public IHttpActionResult GetFiles()
         {
-            List<FileTypeModel> fileTypeList = db.FileTypes.Select(x => new FileTypeModel()
+            // "uploads" klasöründe bulunan dosyaların isimlerini al
+            string[] fileNames = Directory.GetFiles(Path.Combine(System.Web.Hosting.HostingEnvironment.MapPath("~/uploads")));
+
+            // Sadece dosya adlarını döndür (yol bilgisi olmadan)
+            for (int i = 0; i < fileNames.Length; i++)
             {
-                Id = x.Id,
-                typeName = x.typeName,
-            }).ToList();
-
-            return fileTypeList;
-        }
-
-        [HttpGet]
-        [Route("api/filetype/filetypeById/{fileTypeId}")]
-        public FileTypeModel fileTypeIdById(int fileTypeId)
-        {
-            FileTypeModel record = db.FileTypes.Where(x => x.Id == fileTypeId).Select(y => new FileTypeModel()
-            {
-                Id = y.Id,
-                typeName = y.typeName,
-            }).FirstOrDefault();
-
-            return record;
-        }
-
-        [HttpDelete]
-        [Route("api/fileType/deleteFileType/{fileTypeId}")]
-        public ResponseModel deleteFileType(int fileTypeId)
-        {
-            FileType record = db.FileTypes.Where(x => x.Id == fileTypeId).SingleOrDefault();
-            if (record != null)
-            {
-                db.FileTypes.Remove(record);
-                db.SaveChangesAsync();
-                response.process = true;
-                response.message = "Dosya Türü Silindi";
-                return response;
+                fileNames[i] = Path.GetFileName(fileNames[i]);
             }
-            response.process = false;
-            response.message = "Dosya Türü Bulunamadı";
-            return response;
+
+            return Ok(fileNames);
         }
-
-        [HttpPut]
-        [Route("api/filetype/updateFileType")]
-        public ResponseModel updateFileType(FileTypeModel fileType)
-        {
-            FileType record = db.FileTypes.Where(x => x.Id == fileType.Id).SingleOrDefault();
-
-            if (record != null)
-            {
-                record.Id = fileType.Id;
-                record.typeName = fileType.typeName;
-                db.SaveChangesAsync();
-
-                response.process = true;
-                response.message = "Dosya Türü GÜncellendi";
-                return response;
-            }
-            response.process = false;
-            response.message = "Dosya Türü Bulunamadı";
-            return response;
-        }
-        #endregion
 
         [HttpPost]
         [Route("api/file/uploadFile")]
-        public ResponseModel UploadFile(UserModel user)
+        public ResponseModel UploadFile()
         {
-            String fileName = "";
-            var ctx = HttpContext.Current;
-            var root = ctx.Server.MapPath("~/Uploads");
-            var provider =
-                new MultipartFormDataStreamProvider(root);
-
             try
             {
-                Request.Content
-                    .ReadAsMultipartAsync(provider);
+                var httpRequest = HttpContext.Current.Request;
 
-                foreach (var file in provider.FileData)
+                // Kontrol edin, bir dosya gönderildi mi?
+                if (httpRequest.Files.Count > 0)
                 {
-                    var name = file.Headers
-                        .ContentDisposition
-                        .FileName;
+                    var postedFile = httpRequest.Files[0]; // İlk dosyayı alın
 
-                    // remove double quotes from string.
-                    name = name.Trim('"');
+                    // İstediğiniz klasöre dosyayı kaydedin veya başka bir işlem yapın
+                    var filePath = HttpContext.Current.Server.MapPath("~/uploads/" + postedFile.FileName);
+                    postedFile.SaveAs(filePath);
 
-                    var localFileName = file.LocalFileName;
-                    var filePath = Path.Combine(root, name);
-                    fileName = localFileName;
-
-                    System.IO.File.Move(localFileName, filePath);
+                    // Hata durumunu döndürün
+                    response.process = true;
+                    response.message = "Dosya Yüklendi";
+                    return response;
                 }
-            }
-            catch (Exception e)
-            {
+
+                // Dosya gönderilmediyse hata durumunu döndürün
                 response.process = false;
-                response.message = e.Message;
+                response.message = "Dosya Yüklenemedi";
                 return response;
             }
-
-            Models.File record = new Models.File();
-            record.fileUploaderId = user.Id;
-            record.fileName = fileName;
-            record.fileGroupId = user.userGroupId;
-
-
-
-            response.process = true;
-            response.message = "Dosya Eklendi";
-            return response;
-
+            catch (Exception ex)
+            {
+                // Hata durumunu döndürün
+                response.process = false;
+                response.message = ex.Message;
+                return response;
+            }
         }
+
+        [HttpGet]
+        [Route("api/download/{fileName}")]
+        public IHttpActionResult DownloadFile(string fileName)
+        {
+            try
+            {
+                string uploadsFolder = HttpContext.Current.Server.MapPath("~/uploads/");
+                string filePath = Path.Combine(uploadsFolder, fileName);
+
+                // Dosya var mı diye kontrol edin
+                if (System.IO.File.Exists(filePath))
+                {
+                    // Dosyayı bir byte dizisine okuyun
+                    byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+
+                    // Yanıtı bir StreamContent nesnesi olarak oluşturun
+                    var responseContent = new StreamContent(new MemoryStream(fileBytes));
+
+                    // İndirilecek dosyanın MIME türünü ayarlayın
+                    responseContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+                    // İndirilecek dosyanın adını ayarlayın
+                    responseContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = fileName
+                    };
+
+                    // Dosyayı içeren yanıtı döndürün
+                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = responseContent
+                    });
+                }
+
+                // Dosya bulunamadıysa hata durumunu döndürün
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                // Hata durumunu döndürün
+                return InternalServerError(ex);
+            }
+        }
+        #endregion
     }
 }

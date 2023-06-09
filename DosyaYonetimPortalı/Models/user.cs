@@ -25,7 +25,7 @@ namespace DosyaYonetimPortalı.Models
         public string userEmail { get; set; }
         public string userPassword { get; set; }
         public int userAuthorityId { get; set; }
-        public int userGroupId { get; set; }
+        public Nullable<int> userGroupId { get; set; }
     
         public virtual Authority Authority { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

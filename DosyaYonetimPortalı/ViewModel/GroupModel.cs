@@ -9,5 +9,7 @@ namespace DosyaYonetimPortalı.ViewModel
     {
         public int Id { get; set; }
         public string groupName { get; set; }
+
+        public int totalUser { get; set; }
     }
 }

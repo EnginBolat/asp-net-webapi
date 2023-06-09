@@ -131,7 +131,7 @@
     <Compile Include="Models\Authority.cs">
       <DependentUpon>ModelDB.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\CustomModel.cs" />
+    <Compile Include="ViewModel\CustomModel.cs" />
     <Compile Include="Models\File.cs">
       <DependentUpon>ModelDB.tt</DependentUpon>
     </Compile>
