@@ -13,10 +13,10 @@ namespace DosyaYonetimPortalı.Models
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class Db01Entities1 : DbContext
+    public partial class Db01Entities4 : DbContext
     {
-        public Db01Entities1()
-            : base("name=Db01Entities1")
+        public Db01Entities4()
+            : base("name=Db01Entities4")
         {
         }
     
@@ -27,7 +27,6 @@ namespace DosyaYonetimPortalı.Models
     
         public virtual DbSet<Authority> Authorities { get; set; }
         public virtual DbSet<File> Files { get; set; }
-        public virtual DbSet<FileType> FileTypes { get; set; }
         public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<User> Users { get; set; }
     }

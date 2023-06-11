@@ -18,22 +18,14 @@
           </Key>
           <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="fileName" Type="nvarchar" MaxLength="50" Nullable="false" />
-          <Property Name="fileTypeId" Type="int" Nullable="false" />
           <Property Name="fileGroupId" Type="int" Nullable="false" />
           <Property Name="fileUploaderId" Type="int" Nullable="false" />
-        </EntityType>
-        <EntityType Name="FileType">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="typeName" Type="nchar" MaxLength="10" Nullable="false" />
         </EntityType>
         <EntityType Name="Group">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
-          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Id" Type="int" Nullable="false" />
           <Property Name="groupName" Type="nvarchar" MaxLength="50" Nullable="false" />
         </EntityType>
         <EntityType Name="Users">
@@ -47,18 +39,6 @@
           <Property Name="userAuthorityId" Type="int" Nullable="false" />
           <Property Name="userGroupId" Type="int" />
         </EntityType>
-        <Association Name="FK_File_ToFileType">
-          <End Role="FileType" Type="Self.FileType" Multiplicity="1" />
-          <End Role="File" Type="Self.File" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="FileType">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="File">
-              <PropertyRef Name="fileTypeId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <Association Name="FK_File_ToGroup">
           <End Role="Group" Type="Self.Group" Multiplicity="1" />
           <End Role="File" Type="Self.File" Multiplicity="*" />
@@ -110,13 +90,8 @@
         <EntityContainer Name="Db01ModelStoreContainer">
           <EntitySet Name="Authority" EntityType="Self.Authority" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="File" EntityType="Self.File" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="FileType" EntityType="Self.FileType" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Group" EntityType="Self.Group" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
-          <AssociationSet Name="FK_File_ToFileType" Association="Self.FK_File_ToFileType">
-            <End Role="FileType" EntitySet="FileType" />
-            <End Role="File" EntitySet="File" />
-          </AssociationSet>
           <AssociationSet Name="FK_File_ToGroup" Association="Self.FK_File_ToGroup">
             <End Role="Group" EntitySet="Group" />
             <End Role="File" EntitySet="File" />
@@ -153,26 +128,16 @@
           </Key>
           <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="fileName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="fileTypeId" Type="Int32" Nullable="false" />
           <Property Name="fileGroupId" Type="Int32" Nullable="false" />
           <Property Name="fileUploaderId" Type="Int32" Nullable="false" />
-          <NavigationProperty Name="FileType" Relationship="Self.FK_File_ToFileType" FromRole="File" ToRole="FileType" />
           <NavigationProperty Name="Group" Relationship="Self.FK_File_ToGroup" FromRole="File" ToRole="Group" />
           <NavigationProperty Name="User" Relationship="Self.FK_File_ToUsers" FromRole="File" ToRole="Users" />
-        </EntityType>
-        <EntityType Name="FileType">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="typeName" Type="String" MaxLength="10" FixedLength="true" Unicode="true" Nullable="false" />
-          <NavigationProperty Name="Files" Relationship="Self.FK_File_ToFileType" FromRole="FileType" ToRole="File" />
         </EntityType>
         <EntityType Name="Group">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
-          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Id" Type="Int32" Nullable="false" />
           <Property Name="groupName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <NavigationProperty Name="Files" Relationship="Self.FK_File_ToGroup" FromRole="Group" ToRole="File" />
           <NavigationProperty Name="Users" Relationship="Self.FK_Users_ToGroup" FromRole="Group" ToRole="Users" />
@@ -200,18 +165,6 @@
             </Principal>
             <Dependent Role="Users">
               <PropertyRef Name="userAuthorityId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_File_ToFileType">
-          <End Role="FileType" Type="Self.FileType" Multiplicity="1" />
-          <End Role="File" Type="Self.File" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="FileType">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="File">
-              <PropertyRef Name="fileTypeId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -251,19 +204,14 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityContainer Name="Db01Entities1" annotation:LazyLoadingEnabled="true">
+        <EntityContainer Name="Db01Entities4" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Authorities" EntityType="Self.Authority" />
           <EntitySet Name="Files" EntityType="Self.File" />
-          <EntitySet Name="FileTypes" EntityType="Self.FileType" />
           <EntitySet Name="Groups" EntityType="Self.Group" />
           <EntitySet Name="Users" EntityType="Self.User" />
           <AssociationSet Name="FK_Users_ToAuthority" Association="Self.FK_Users_ToAuthority">
             <End Role="Authority" EntitySet="Authorities" />
             <End Role="Users" EntitySet="Users" />
-          </AssociationSet>
-          <AssociationSet Name="FK_File_ToFileType" Association="Self.FK_File_ToFileType">
-            <End Role="FileType" EntitySet="FileTypes" />
-            <End Role="File" EntitySet="Files" />
           </AssociationSet>
           <AssociationSet Name="FK_File_ToGroup" Association="Self.FK_File_ToGroup">
             <End Role="Group" EntitySet="Groups" />
@@ -283,7 +231,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="Db01ModelStoreContainer" CdmEntityContainer="Db01Entities1">
+        <EntityContainerMapping StorageEntityContainer="Db01ModelStoreContainer" CdmEntityContainer="Db01Entities4">
           <EntitySetMapping Name="Authorities">
             <EntityTypeMapping TypeName="Db01Model.Authority">
               <MappingFragment StoreEntitySet="Authority">
@@ -297,17 +245,8 @@
               <MappingFragment StoreEntitySet="File">
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="fileName" ColumnName="fileName" />
-                <ScalarProperty Name="fileTypeId" ColumnName="fileTypeId" />
                 <ScalarProperty Name="fileGroupId" ColumnName="fileGroupId" />
                 <ScalarProperty Name="fileUploaderId" ColumnName="fileUploaderId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="FileTypes">
-            <EntityTypeMapping TypeName="Db01Model.FileType">
-              <MappingFragment StoreEntitySet="FileType">
-                <ScalarProperty Name="Id" ColumnName="Id" />
-                <ScalarProperty Name="typeName" ColumnName="typeName" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

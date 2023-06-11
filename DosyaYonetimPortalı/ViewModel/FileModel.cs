@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DosyaYonetimPortalı.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,8 +10,7 @@ namespace DosyaYonetimPortalı.ViewModel
     {
         public int Id { get; set; }
         public string fileName { get; set; }
-        public int fileTypeId { get; set; }
-        public int fileGroupId { get; set; }
-        public int fileUploaderId { get; set; }
+        public GroupModel fileGroupId { get; set; }
+        public CustomModel fileUploaderId { get; set; }
     }
 }

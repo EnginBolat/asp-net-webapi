@@ -16,11 +16,9 @@ namespace DosyaYonetimPortalı.Models
     {
         public int Id { get; set; }
         public string fileName { get; set; }
-        public int fileTypeId { get; set; }
         public int fileGroupId { get; set; }
         public int fileUploaderId { get; set; }
     
-        public virtual FileType FileType { get; set; }
         public virtual Group Group { get; set; }
         public virtual User User { get; set; }
     }

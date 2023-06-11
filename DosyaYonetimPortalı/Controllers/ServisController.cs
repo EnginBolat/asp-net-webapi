@@ -12,9 +12,10 @@ using System.Web.Http;
 
 namespace DosyaYonetimPortalı.App_Start
 {
+    [Authorize]
     public class ServisController : ApiController
     {
-        Db01Entities1 db = new Db01Entities1();
+        Db01Entities4 db = new Db01Entities4();
         ResponseModel response = new ResponseModel();
         //Kullanıcı İşlemleri
         #region User
@@ -311,7 +312,150 @@ namespace DosyaYonetimPortalı.App_Start
         }
         #endregion
 
+        //Dosya İşlemleri
         #region File
+
+        [HttpGet]
+        [Route("api/file/list")]
+        public List<ViewModel.FileModel> allFiles()
+        {
+            List<ViewModel.FileModel> fileList = db.Files.Select(x => new ViewModel.FileModel()
+            {
+                Id = x.Id,
+                fileName = x.fileName,
+                fileGroupId = db.Groups.Where(g => g.Id == x.fileGroupId).Select(group => new GroupModel()
+                {
+                    Id = group.Id,
+                    groupName = group.groupName
+                }).FirstOrDefault(),
+                fileUploaderId = db.Users.Where(g => g.Id == x.fileUploaderId).Select(custom => new CustomModel()
+                {
+                    Id = custom.Id,
+                    userNameSurname = custom.userNameSurname,
+                    userEmail = custom.userEmail,
+                    userPassword = custom.userPassword,
+                    userAuthority = db.Authorities.Where(y => y.Id == custom.userAuthorityId).Select(auth => new AuthorityModel()
+                    {
+                        Id = auth.Id,
+                        authorityName = auth.authorityName,
+                    }).FirstOrDefault(),
+                    userGroup = db.Groups.Where(g => g.Id == custom.userGroupId).Select(g => new GroupModel()
+                    {
+                        Id = g.Id,
+                        groupName = g.groupName,
+                    }).FirstOrDefault(),
+                }).FirstOrDefault(),
+            }).ToList();
+            return fileList;
+        }
+
+
+
+
+
+
+        [HttpPost]
+        [Route("api/file/addFile")]
+        public ResponseModel AddFile(FileModel fileModel)
+        {
+            if (db.Files.Any(c => c.Id == fileModel.Id))
+            {
+                response.process = false;
+                response.message = "Dosya Daha Önceden Kayıtlıdır";
+                return response;
+            }
+
+            Models.File record = new Models.File();
+
+            record.fileName = fileModel.fileName;
+            record.fileGroupId = fileModel.fileGroupId.Id;
+            record.fileUploaderId = fileModel.fileUploaderId.Id;
+
+            db.Files.Add(record);
+            db.SaveChanges();
+            response.process = true;
+            response.message = "Dosya Eklendi";
+
+            return response;
+        }
+
+        [HttpGet]
+        [Route("api/file/fileById/{fileId}")]
+        public ViewModel.CustomFileModel fileById(int fileId)
+        {
+            ViewModel.CustomFileModel file = db.Files.Where(y => y.Id == fileId).Select(x => new ViewModel.CustomFileModel()
+            {
+                Id = x.Id,
+                fileName = x.fileName,
+                fileGroupId = db.Groups.Where(a => a.Id == x.fileGroupId).Select(g => new GroupModel()
+                {
+                    Id = g.Id,
+                    groupName = g.groupName,
+                }).SingleOrDefault(),
+                fileUploaderId = db.Users.Where(u => u.Id == x.fileUploaderId).Select(us => new CustomModel()
+                {
+                    Id = us.Id,
+                    userNameSurname = us.userNameSurname,
+                    userEmail = us.userEmail,
+                    userPassword = us.userPassword,
+                    userAuthority = db.Authorities.Where(y => y.Id == us.userAuthorityId).Select(auth => new AuthorityModel()
+                    {
+                        Id = auth.Id,
+                        authorityName = auth.authorityName,
+                    }).FirstOrDefault(),
+                    userGroup = db.Groups.Where(g => g.Id == us.userGroupId).Select(g => new GroupModel()
+                    {
+                        Id = g.Id,
+                        groupName = g.groupName,
+                    }).FirstOrDefault(),
+                }).FirstOrDefault(),
+            }).SingleOrDefault();
+
+            return file;
+        }
+
+        [HttpPut]
+        [Route("api/file/updateFile")]
+        public ResponseModel updateFile(ViewModel.FileModel file)
+        {
+            Models.File record = db.Files.Where(x => x.Id == file.Id).SingleOrDefault();
+
+            if (record != null)
+            {
+                record.fileName = file.fileName;
+                record.fileGroupId = file.fileGroupId.Id;
+                record.fileUploaderId = file.fileUploaderId.Id;
+
+                db.SaveChangesAsync();
+
+                response.process = true;
+                response.message = "Dosya Güncellendi";
+                return response;
+            }
+            response.process = false;
+            response.message = "Dosya Bulunamadı";
+            return response;
+        }
+
+
+        [HttpDelete]
+        [Route("api/file/deleteFile/{fileId}")]
+        public ResponseModel deleteFile(int fileId)
+        {
+            Models.File file = db.Files.Where(x => x.Id == fileId).SingleOrDefault();
+            if (file != null)
+            {
+                db.Files.Remove(file);
+                db.SaveChangesAsync();
+                response.process = true;
+                response.message = "Dosya Silindi";
+                return response;
+            }
+            response.process = false;
+            response.message = "Dosya Bulunamadı";
+            return response;
+        }
+
 
         [HttpGet]
         [Route("api/file/allFiles")]
@@ -346,33 +490,43 @@ namespace DosyaYonetimPortalı.App_Start
                     var filePath = HttpContext.Current.Server.MapPath("~/uploads/" + postedFile.FileName);
                     postedFile.SaveAs(filePath);
 
-                    // Hata durumunu döndürün
-                    response.process = true;
-                    response.message = "Dosya Yüklendi";
+                    // Başarılı durumunu döndürün
+                    var response = new ResponseModel
+                    {
+                        process = true,
+                        message = "Dosya Yüklendi"
+                    };
                     return response;
                 }
 
                 // Dosya gönderilmediyse hata durumunu döndürün
-                response.process = false;
-                response.message = "Dosya Yüklenemedi";
-                return response;
+                var errorResponse = new ResponseModel
+                {
+                    process = false,
+                    message = "Dosya Yüklenemedi"
+                };
+                return errorResponse;
             }
             catch (Exception ex)
             {
                 // Hata durumunu döndürün
-                response.process = false;
-                response.message = ex.Message;
-                return response;
+                var errorResponse = new ResponseModel
+                {
+                    process = false,
+                    message = ex.Message
+                };
+                return errorResponse;
             }
         }
 
+
         [HttpGet]
-        [Route("api/download/{fileName}")]
+        [Route("api/file/downloadFile/{fileName}")]
         public IHttpActionResult DownloadFile(string fileName)
         {
             try
             {
-                string uploadsFolder = HttpContext.Current.Server.MapPath("~/uploads/");
+                string uploadsFolder = HttpContext.Current.Server.MapPath("~/Uploads/");
                 string filePath = Path.Combine(uploadsFolder, fileName);
 
                 // Dosya var mı diye kontrol edin
@@ -381,11 +535,14 @@ namespace DosyaYonetimPortalı.App_Start
                     // Dosyayı bir byte dizisine okuyun
                     byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
 
-                    // Yanıtı bir StreamContent nesnesi olarak oluşturun
-                    var responseContent = new StreamContent(new MemoryStream(fileBytes));
+                    // İndirilecek dosyanın MIME türünü belirleyin
+                    string mimeType = MimeMapping.GetMimeMapping(fileName);
+
+                    // Yanıtı bir ByteArrayContent nesnesi olarak oluşturun
+                    var responseContent = new ByteArrayContent(fileBytes);
 
                     // İndirilecek dosyanın MIME türünü ayarlayın
-                    responseContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                    responseContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
 
                     // İndirilecek dosyanın adını ayarlayın
                     responseContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
