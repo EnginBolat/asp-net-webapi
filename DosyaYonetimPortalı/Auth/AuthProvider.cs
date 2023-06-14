@@ -39,9 +39,9 @@ namespace DosyaYonetimPortalı.Auth
                     {"userNameSurname", member.userNameSurname},
                     {"userEmail", member.userEmail},
                     {"userAuthorityName", member.userAuthority.authorityName},
+                    {"userGroupId", member.userGroup.Id.ToString()},
 
                 });
-
 
                 AuthenticationTicket ticket = new AuthenticationTicket(identity, propert);
                 context.Validated(ticket);

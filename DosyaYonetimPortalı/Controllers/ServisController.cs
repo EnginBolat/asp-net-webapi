@@ -17,6 +17,7 @@ namespace DosyaYonetimPortalı.App_Start
     {
         Db01Entities4 db = new Db01Entities4();
         ResponseModel response = new ResponseModel();
+
         //Kullanıcı İşlemleri
         #region User
 
@@ -48,17 +49,51 @@ namespace DosyaYonetimPortalı.App_Start
 
         [HttpGet]
         [Route("api/user/userById/{userId}")]
-        public UserModel userById(int userId)
+        public CustomModel userById(int userId)
         {
-            UserModel record = db.Users.Where(x => x.Id == userId).Select(y => new UserModel()
+            CustomModel record = db.Users.Where(x => x.Id == userId).Select(y => new CustomModel()
             {
                 Id = y.Id,
                 userNameSurname = y.userNameSurname,
                 userEmail = y.userEmail,
                 userPassword = y.userPassword,
-                userAuthorityId = y.userAuthorityId,
-                userGroupId = y.userGroupId ?? 1,
+                userAuthority = db.Authorities.Where(z => y.Id == y.userAuthorityId).Select(z => new AuthorityModel()
+                {
+                    Id = z.Id,
+                    authorityName = z.authorityName,
+                }).FirstOrDefault(),
+                userGroup = db.Groups.Where(g => g.Id == y.userGroupId).Select(g => new GroupModel()
+                {
+                    Id = g.Id,
+                    groupName = g.groupName,
+                }).FirstOrDefault(),
             }).FirstOrDefault();
+
+            return record;
+        }
+
+        [HttpGet]
+        [Route("api/user/usersByGroupId/{groupId}")]
+        public List<CustomModel> usersByGroupId(int groupId)
+        {
+            List<CustomModel> record = db.Users.Where(x => x.userGroupId == groupId).Select(y => new CustomModel()
+            {
+                Id = y.Id,
+                userNameSurname = y.userNameSurname,
+                userEmail = y.userEmail,
+                userPassword = y.userPassword,
+                userAuthority = db.Authorities.Where(z => y.Id == y.userAuthorityId).Select(z => new AuthorityModel()
+                {
+                    Id = z.Id,
+                    authorityName = z.authorityName,
+                }).FirstOrDefault(),
+                userGroup = db.Groups.Where(g => g.Id == y.userGroupId).Select(g => new GroupModel()
+                {
+                    Id = g.Id,
+                    groupName = g.groupName,
+                }).FirstOrDefault(),
+
+            }).ToList();
 
             return record;
         }
@@ -83,7 +118,7 @@ namespace DosyaYonetimPortalı.App_Start
 
         [HttpPost]
         [Route("api/user/addUser")]
-        public ResponseModel addUser(UserModel user)
+        public ResponseModel addUser(CustomModel user)
         {
             if (db.Users.Count(c => c.userEmail == user.userEmail) > 0)
             {
@@ -96,8 +131,8 @@ namespace DosyaYonetimPortalı.App_Start
             record.userNameSurname = user.userNameSurname;
             record.userEmail = user.userEmail;
             record.userPassword = user.userPassword;
-            record.userAuthorityId = user.userAuthorityId;
-            record.userGroupId = user.userGroupId;
+            record.userAuthorityId = user.userAuthority.Id;
+            record.userGroupId = user.userGroup.Id;
             db.Users.Add(record);
             db.SaveChanges();
             response.process = true;
@@ -107,7 +142,7 @@ namespace DosyaYonetimPortalı.App_Start
 
         [HttpPut]
         [Route("api/user/updateUser")]
-        public ResponseModel updateUser(UserModel user)
+        public ResponseModel updateUser(CustomModel user)
         {
             User record = db.Users.Where(x => x.Id == user.Id).SingleOrDefault();
 
@@ -116,8 +151,8 @@ namespace DosyaYonetimPortalı.App_Start
                 record.userNameSurname = user.userNameSurname;
                 record.userEmail = user.userEmail;
                 record.userPassword = user.userPassword;
-                record.userAuthorityId = user.userAuthorityId;
-                record.userGroupId = user.userGroupId;
+                record.userAuthorityId = user.userAuthority.Id;
+                record.userGroupId = user.userGroup.Id;
 
                 db.SaveChangesAsync();
 
@@ -323,6 +358,8 @@ namespace DosyaYonetimPortalı.App_Start
             {
                 Id = x.Id,
                 fileName = x.fileName,
+                fileOriginalName = x.fileOriginalName,
+                fileType = x.fileType,
                 fileGroupId = db.Groups.Where(g => g.Id == x.fileGroupId).Select(group => new GroupModel()
                 {
                     Id = group.Id,
@@ -349,10 +386,41 @@ namespace DosyaYonetimPortalı.App_Start
             return fileList;
         }
 
-
-
-
-
+        [HttpGet]
+        [Route("api/file/listByGroupId/{groupId}")]
+        public List<ViewModel.FileModel> allFilesByGroup(int groupId)
+        {
+            List<ViewModel.FileModel> fileList = db.Files.Where(p => p.fileGroupId == groupId).Select(x => new ViewModel.FileModel()
+            {
+                Id = x.Id,
+                fileName = x.fileName,
+                fileOriginalName = x.fileOriginalName,
+                fileType = x.fileType,
+                fileGroupId = db.Groups.Where(g => g.Id == x.fileGroupId).Select(group => new GroupModel()
+                {
+                    Id = group.Id,
+                    groupName = group.groupName
+                }).FirstOrDefault(),
+                fileUploaderId = db.Users.Where(g => g.Id == x.fileUploaderId).Select(custom => new CustomModel()
+                {
+                    Id = custom.Id,
+                    userNameSurname = custom.userNameSurname,
+                    userEmail = custom.userEmail,
+                    userPassword = custom.userPassword,
+                    userAuthority = db.Authorities.Where(y => y.Id == custom.userAuthorityId).Select(auth => new AuthorityModel()
+                    {
+                        Id = auth.Id,
+                        authorityName = auth.authorityName,
+                    }).FirstOrDefault(),
+                    userGroup = db.Groups.Where(g => g.Id == custom.userGroupId).Select(g => new GroupModel()
+                    {
+                        Id = g.Id,
+                        groupName = g.groupName,
+                    }).FirstOrDefault(),
+                }).FirstOrDefault(),
+            }).ToList();
+            return fileList;
+        }
 
         [HttpPost]
         [Route("api/file/addFile")]
@@ -370,14 +438,19 @@ namespace DosyaYonetimPortalı.App_Start
             record.fileName = fileModel.fileName;
             record.fileGroupId = fileModel.fileGroupId.Id;
             record.fileUploaderId = fileModel.fileUploaderId.Id;
+            record.fileOriginalName = fileModel.fileOriginalName;
+            record.fileType = fileModel.fileType;
 
             db.Files.Add(record);
             db.SaveChanges();
+
             response.process = true;
             response.message = "Dosya Eklendi";
 
             return response;
         }
+
+
 
         [HttpGet]
         [Route("api/file/fileById/{fileId}")]
@@ -387,6 +460,8 @@ namespace DosyaYonetimPortalı.App_Start
             {
                 Id = x.Id,
                 fileName = x.fileName,
+                fileOriginalName = x.fileOriginalName,
+                fileType = x.fileType,
                 fileGroupId = db.Groups.Where(a => a.Id == x.fileGroupId).Select(g => new GroupModel()
                 {
                     Id = g.Id,
@@ -414,6 +489,44 @@ namespace DosyaYonetimPortalı.App_Start
             return file;
         }
 
+
+        [HttpGet]
+        [Route("api/file/filesByUserId/{userId}")]
+        public List<ViewModel.FileModel> filesByUserId(int userId)
+        {
+            List<ViewModel.FileModel> fileList = db.Files.Where(g => g.fileUploaderId == userId).Select(x => new ViewModel.FileModel()
+            {
+                Id = x.Id,
+                fileName = x.fileName,
+                fileOriginalName = x.fileOriginalName,
+                fileType = x.fileType,
+                fileGroupId = db.Groups.Where(g => g.Id == x.fileGroupId).Select(group => new GroupModel()
+                {
+                    Id = group.Id,
+                    groupName = group.groupName
+                }).FirstOrDefault(),
+                fileUploaderId = db.Users.Where(g => g.Id == x.fileUploaderId).Select(custom => new CustomModel()
+                {
+                    Id = custom.Id,
+                    userNameSurname = custom.userNameSurname,
+                    userEmail = custom.userEmail,
+                    userPassword = custom.userPassword,
+                    userAuthority = db.Authorities.Where(y => y.Id == custom.userAuthorityId).Select(auth => new AuthorityModel()
+                    {
+                        Id = auth.Id,
+                        authorityName = auth.authorityName,
+                    }).FirstOrDefault(),
+                    userGroup = db.Groups.Where(g => g.Id == custom.userGroupId).Select(g => new GroupModel()
+                    {
+                        Id = g.Id,
+                        groupName = g.groupName,
+                    }).FirstOrDefault(),
+                }).FirstOrDefault(),
+            }).ToList();
+
+            return fileList;
+        }
+
         [HttpPut]
         [Route("api/file/updateFile")]
         public ResponseModel updateFile(ViewModel.FileModel file)
@@ -425,6 +538,7 @@ namespace DosyaYonetimPortalı.App_Start
                 record.fileName = file.fileName;
                 record.fileGroupId = file.fileGroupId.Id;
                 record.fileUploaderId = file.fileUploaderId.Id;
+                record.fileType = file.fileType;
 
                 db.SaveChangesAsync();
 
@@ -521,50 +635,20 @@ namespace DosyaYonetimPortalı.App_Start
 
 
         [HttpGet]
-        [Route("api/file/downloadFile/{fileName}")]
-        public IHttpActionResult DownloadFile(string fileName)
+        [Route("api/file/downloadFile/{fileName}/{fileType}")]
+        public HttpResponseMessage DownloadFile(string fileName, string fileType)
         {
-            try
-            {
-                string uploadsFolder = HttpContext.Current.Server.MapPath("~/Uploads/");
-                string filePath = Path.Combine(uploadsFolder, fileName);
+            string fullFileName = fileName + "." + fileType;
+            var filePath = Path.Combine("C:\\Users\\Engin Bolat\\source\\repos\\DosyaYonetimPortalı\\DosyaYonetimPortalı\\Uploads", fullFileName);
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
 
-                // Dosya var mı diye kontrol edin
-                if (System.IO.File.Exists(filePath))
-                {
-                    // Dosyayı bir byte dizisine okuyun
-                    byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+            var response = new HttpResponseMessage(HttpStatusCode.OK);
+            response.Content = new ByteArrayContent(fileBytes);
+            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+            response.Content.Headers.ContentDisposition.FileName = fileName;
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-                    // İndirilecek dosyanın MIME türünü belirleyin
-                    string mimeType = MimeMapping.GetMimeMapping(fileName);
-
-                    // Yanıtı bir ByteArrayContent nesnesi olarak oluşturun
-                    var responseContent = new ByteArrayContent(fileBytes);
-
-                    // İndirilecek dosyanın MIME türünü ayarlayın
-                    responseContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-
-                    // İndirilecek dosyanın adını ayarlayın
-                    responseContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-                    {
-                        FileName = fileName
-                    };
-
-                    // Dosyayı içeren yanıtı döndürün
-                    return ResponseMessage(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = responseContent
-                    });
-                }
-
-                // Dosya bulunamadıysa hata durumunu döndürün
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                // Hata durumunu döndürün
-                return InternalServerError(ex);
-            }
+            return response;
         }
         #endregion
     }
