@@ -205,7 +205,7 @@ namespace DosyaYonetimPortalı.App_Start
             if (record != null)
             {
                 db.Groups.Remove(record);
-                db.SaveChangesAsync();
+                db.SaveChanges();
                 response.process = true;
                 response.message = "Grup Silindi";
                 return response;
